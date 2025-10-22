@@ -1,0 +1,67 @@
+.magic-card {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+  transition: all 0.2s ease-out;
+}
+
+.magic-card.animations-disabled:hover {
+  transform: none !important;
+}
+
+.magic-card:not(.animations-disabled):hover {
+  transition-duration: 0.1s;
+}
+
+.magic-card-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Border glow effect */
+.card--border-glow {
+    --glow-intensity: 0;
+    --glow-radius: 400px;
+}
+
+.card--border-glow:hover {
+    --glow-intensity: 0.5;
+}
+
+.card--border-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(var(--glow-color), var(--glow-intensity)) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card--border-glow:hover::before {
+  opacity: 1;
+}
+
+/* Particles */
+.particle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Ripple Click Effect */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(var(--glow-color), 0.3) 0%, rgba(var(--glow-color), 0.1) 40%, transparent 70%);
+    pointer-events: none;
+    z-index: 4;
+}

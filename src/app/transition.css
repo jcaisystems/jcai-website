@@ -1,0 +1,36 @@
+/* This is the overlay that slides up and down */
+.svg-curve {
+  position: fixed;
+  left: 0;
+  top: -300px; /* Hides the top curve initially */
+  width: 100vw;
+  height: calc(100vh + 600px); /* Taller than viewport for the curves */
+  fill: #0f172a; /* Same as slate-900 */
+  pointer-events: none;
+  z-index: 1000; /* Ensures it's on top of all content */
+}
+
+/* This is a simple black background to hide the page instantly before the SVG slides up */
+.background {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0f172a;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* This styles the text (e.g., "About Us") that appears during the transition */
+.route {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 46px;
+  font-weight: 700;
+  z-index: 1001; /* On top of the SVG overlay */
+  pointer-events: none;
+}

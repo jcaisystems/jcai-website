@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+:root {
+  --background: #334155; /* slate-700 */
+  --foreground: #e2e8f0; /* slate-200 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ADD THE FOLLOWING CODE BLOCK */
+@layer utilities {
+  .gradient-text {
+    @apply bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent;
+  }
+}
+/* END OF ADDED CODE */
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tilted Card Styles */
+.tilted-card-figure {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tilted-card-inner {
+  position: relative;
+}
+
+.tilted-card-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  border-radius: 1rem; /* 16px */
+  will-change: transform;
+}
+
+.tilted-card-caption {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 4px;
+  background-color: #fff;
+  padding: 4px 10px;
+  font-size: 10px;
+  color: #2d2d2d;
+  opacity: 0;
+  z-index: 3;
+}
+
+@media (max-width: 640px) {
+  .tilted-card-caption {
+    display: none;
+  }
+}
+
+/* FullPage.js Overrides for Dark Theme */
+body {
+  background-color: #111827; /* bg-gray-900 */
+}
+
+#fp-nav ul li a span, .fp-slidesNav ul li a span {
+  background: #f1f1f1 !important; /* Make navigation dots visible */
+}
+
+/* Ken Burns background animation */
+@keyframes kenBurns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+.ken-burns {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  opacity: 0.15;
+  animation: kenBurns 20s ease-in-out infinite alternate;
+}
+
+/* Ensure sections take up full viewport height within fullpage wrapper */
+.section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Helper for content within sections */
+.section-content {
+  max-width: 1000px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes grid {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+.animate-grid {
+  animation: grid 15s linear infinite;
+}
+
+/* src/app/globals.css */
+
+@keyframes wave-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(155, 207, 61, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(155, 207, 61, 0.6);
+  }
+}
+
+/* Add this class for scroll locking */
+.no-scroll {
+  overflow: hidden !important;
+}
