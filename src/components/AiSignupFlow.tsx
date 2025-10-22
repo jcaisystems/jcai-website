@@ -40,6 +40,7 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
   const [userInput, setUserInput] = useState('');
   const [finalName, setFinalName] = useState('');
   const [finalEmail, setFinalEmail] = useState('');
+  const [finalCompany, setFinalCompany] = useState(''); // --- ADDED ---
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sessionId] = useState(() => typeof window !== 'undefined' ? crypto.randomUUID() : '');
@@ -68,7 +69,7 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
     };
 
     try {
-       await new Promise(resolve => setTimeout(resolve, 300)); // Wait for exit anim
+        await new Promise(resolve => setTimeout(resolve, 300)); // Wait for exit anim
 
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
@@ -86,7 +87,7 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
       
 
       if (data.error) {
-           throw new Error(data.question || "An unknown error occurred in the backend.");
+            throw new Error(data.question || "An unknown error occurred in the backend.");
       }
       if (!data.question || !data.questionType || data.progress === undefined) {
           throw new Error("Invalid data structure received from AI.");
@@ -95,7 +96,7 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
       // *** Add AI response to local history ***
       // Only add if it's not the final "Thank You" message triggered by finalStep=true response
       if (data.progress < 100) {
-           setHistory(prev => [...prev, { role: 'assistant', content: data.question }]);
+            setHistory(prev => [...prev, { role: 'assistant', content: data.question }]);
       }
 
       setCurrentStep(data); // Update UI to show the new question/step
@@ -136,13 +137,14 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
 
     // --- Final Form Submission Trigger ---
     if (currentStep.questionType === 'final-form') {
-       // *** SEND FULL HISTORY AT THE END ***
-       payload.finalStep = true;
-       payload.conversation = updatedHistory; // Send the complete history
-       payload.finalName = finalName;
-       payload.finalEmail = finalEmail;
-       fetchNextStep(payload); // Let n8n handle final submission logic
-       // n8n should respond with the "Thank You" step data
+        // *** SEND FULL HISTORY AT THE END ***
+        payload.finalStep = true;
+        payload.conversation = updatedHistory; // Send the complete history
+        payload.finalName = finalName;
+        payload.finalEmail = finalEmail;
+        payload.finalCompany = finalCompany; // --- ADDED ---
+        fetchNextStep(payload); // Let n8n handle final submission logic
+        // n8n should respond with the "Thank You" step data
     } else {
       // --- Fetch Next AI Step ---
       // For intermediate steps, send only the last user message
@@ -150,9 +152,10 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
       // payload.previousQuestion = currentStep.question; // Optionally send the question text
       fetchNextStep(payload);
     }
-     // Clear final form fields after submission attempt (success or fail)
-     setFinalName('');
-     setFinalEmail('');
+      // Clear final form fields after submission attempt (success or fail)
+      setFinalName('');
+      setFinalEmail('');
+      setFinalCompany(''); // --- ADDED ---
   };
 
 
@@ -161,14 +164,14 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
     if (currentStep?.progress === 100 && !error) {
         return <p className="text-center text-lg text-green-400 mt-4">Check your email within 48 hours!</p>;
     }
-     if (isLoading && !currentStep) return null;
-     if (isExiting || (isLoading && currentStep)) {
-        return (
-             <div className="h-40 flex items-center justify-center">
-                 <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
-             </div>
-        );
-     }
+      if (isLoading && !currentStep) return null;
+      if (isExiting || (isLoading && currentStep)) {
+          return (
+                <div className="h-40 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                </div>
+          );
+      }
     if (!currentStep) return null;
 
     switch (currentStep.questionType) {
@@ -199,7 +202,7 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
                 variant="outline"
                 onClick={() => handleAnswerSubmit(option)}
                 disabled={isLoading || isExiting}
-                 className={cn(
+                className={cn(
                   "w-full justify-start text-left h-auto py-3 px-4 text-base",
                   "border-slate-600 hover:bg-slate-700 hover:border-cyan-500 hover:text-cyan-300 transition-all duration-200"
                 )}
@@ -211,12 +214,12 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
         );
       case 'final-form':
         if (currentStep.progress === 100) {
-             return <p className="text-center text-lg text-green-400 mt-4">Check your email within 48 hours!</p>;
+            return <p className="text-center text-lg text-green-400 mt-4">Check your email within 48 hours!</p>;
         }
         return (
           // Pass "Final Form Submitted" or similar as the 'answer' for history purposes
           <form onSubmit={(e) => { e.preventDefault(); handleAnswerSubmit("Contact Details Provided"); }} className="space-y-4 mt-4">
-             <div>
+              <div>
                 <Label htmlFor="finalName" className="text-slate-400 mb-1 block text-sm">Full Name *</Label>
                 <Input
                     id="finalName"
@@ -228,11 +231,11 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
                     className="bg-slate-800 border-slate-700 focus:border-cyan-500 text-base"
                     disabled={isLoading || isExiting}
                     autoFocus
-                 />
-             </div>
-             <div>
-                 <Label htmlFor="finalEmail" className="text-slate-400 mb-1 block text-sm">Email Address *</Label>
-                 <Input
+                  />
+              </div>
+              <div>
+                  <Label htmlFor="finalEmail" className="text-slate-400 mb-1 block text-sm">Email Address *</Label>
+                  <Input
                     id="finalEmail"
                     key={currentStep.question + "-email"}
                     type="email"
@@ -242,9 +245,31 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
                     required
                     className="bg-slate-800 border-slate-700 focus:border-cyan-500 text-base"
                     disabled={isLoading || isExiting}
-                 />
-            </div>
-            <Button type="submit" disabled={isLoading || isExiting || !finalName.trim() || !finalEmail.trim()} className="w-full group !bg-[#9bcf3d] hover:!bg-[#8cc030] text-slate-900 font-semibold">
+                  />
+             </div>
+             {/* --- START: ADDED COMPANY FIELD --- */}
+             <div>
+                <Label htmlFor="finalCompany" className="text-slate-400 mb-1 block text-sm">Company Name *</Label>
+                <Input
+                  id="finalCompany"
+                  key={currentStep.question + "-company"}
+                  type="text"
+                  placeholder="Your Company Name"
+                  value={finalCompany}
+                  onChange={(e) => setFinalCompany(e.target.value)}
+                  required 
+                  className="bg-slate-800 border-slate-700 focus:border-cyan-500 text-base"
+                  disabled={isLoading || isExiting}
+                />
+             </div>
+             {/* --- END: ADDED COMPANY FIELD --- */}
+
+            <Button 
+              type="submit" 
+              // --- UPDATED: Added finalCompany check ---
+              disabled={isLoading || isExiting || !finalName.trim() || !finalEmail.trim() || !finalCompany.trim()} 
+              className="w-full group !bg-[#9bcf3d] hover:!bg-[#8cc030] text-slate-900 font-semibold"
+            >
               Get My Free Blueprint <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
           </form>
@@ -273,69 +298,69 @@ export const AiSignupFlow = ({ onClose }: AiSignupFlowProps) => {
         </Button>
 
         {/* Header Area with Progress */}
-         <div className="p-6 border-b border-slate-700/50 flex-shrink-0">
-             <div className="flex justify-center mb-3">
-                 <div className="p-2 bg-slate-700 border border-cyan-500/30 rounded-full inline-block">
+          <div className="p-6 border-b border-slate-700/50 flex-shrink-0">
+              <div className="flex justify-center mb-3">
+                  <div className="p-2 bg-slate-700 border border-cyan-500/30 rounded-full inline-block">
                     <Sparkles className="w-5 h-5 text-cyan-400" />
-                 </div>
-             </div>
-             <h2 className="text-xl font-semibold text-center text-white mb-4">Claim Your Free Blueprint</h2>
-             <div className="w-full bg-slate-700 rounded-full h-2.5">
-                 <motion.div
-                   className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full"
-                   initial={{ width: '0%' }}
-                   animate={{ width: `${currentStep?.progress ?? 0}%`}}
-                   transition={{ duration: 0.5, ease: "easeOut" }}
-                 />
-             </div>
-             <p className="text-right text-xs text-slate-400 mt-1">{currentStep?.progress ?? 0}% Complete</p>
-         </div>
+                  </div>
+              </div>
+              <h2 className="text-xl font-semibold text-center text-white mb-4">Claim Your Free Blueprint</h2>
+              <div className="w-full bg-slate-700 rounded-full h-2.5">
+                  <motion.div
+                    className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full"
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${currentStep?.progress ?? 0}%`}}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+              </div>
+              <p className="text-right text-xs text-slate-400 mt-1">{currentStep?.progress ?? 0}% Complete</p>
+          </div>
 
         {/* Main Content Area (Question + Input) */}
         <div className="flex-grow overflow-y-auto p-6 md:p-10 relative min-h-[250px]"> {/* Added min-height */}
             {/* Initial Loading State */}
             {isLoading && !currentStep && !error && (
-               <div className="absolute inset-0 flex flex-col items-center justify-center h-full">
+                <div className="absolute inset-0 flex flex-col items-center justify-center h-full">
                   <Loader2 className="w-12 h-12 text-cyan-400 animate-spin" />
-               </div>
+                </div>
             )}
 
             {/* Error State */}
             {error && !isLoading && (
-                 <motion.div
+                  <motion.div
                     key="error-message"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="flex flex-col items-center justify-center h-full text-center"
-                 >
-                   <AlertTriangle className="w-12 h-12 text-red-400 mb-4" />
-                   <p className="text-lg text-red-400 mb-6">{error}</p>
-                   <Button onClick={() => window.location.reload()} variant="outline">Refresh Page</Button> {/* Simple refresh on error */}
-                 </motion.div>
+                  >
+                    <AlertTriangle className="w-12 h-12 text-red-400 mb-4" />
+                    <p className="text-lg text-red-400 mb-6">{error}</p>
+                    <Button onClick={() => window.location.reload()} variant="outline">Refresh Page</Button> {/* Simple refresh on error */}
+                  </motion.div>
             )}
 
             {/* Question and Input Area with Animation */}
             {!error && (
-                 <AnimatePresence mode="wait">
+                  <AnimatePresence mode="wait">
                     {currentStep && !isExiting && (
-                         <motion.div
+                          <motion.div
                             key={currentStep.question} // Animate when the question changes
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -30 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
                             className="w-full"
-                         >
+                          >
                             <h3 className="text-2xl md:text-3xl font-semibold mb-6 text-white text-center leading-snug">
                                 {currentStep.question}
                             </h3>
                             {renderInputArea()}
-                         </motion.div>
+                          </motion.div>
                     )}
-                 </AnimatePresence>
+                  </AnimatePresence>
             )}
-             {/* Render Loader during transitions */}
-             {(isExiting || (isLoading && currentStep && currentStep.progress < 100)) && (
+              {/* Render Loader during transitions */}
+              {(isExiting || (isLoading && currentStep && currentStep.progress < 100)) && (
                   <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50">
                       <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
                   </div>
