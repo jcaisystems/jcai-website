@@ -2,8 +2,8 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-// UPDATED: Imported social media icons from lucide-react
-import { ArrowRight, CheckCircle, Loader, Youtube, Instagram, Twitter } from 'lucide-react';
+// UPDATED: Imported social media icons from lucide-react, including Facebook
+import { ArrowRight, CheckCircle, Loader, Youtube, Instagram, Twitter, Facebook } from 'lucide-react';
 
 const Footer = () => {
     const [email, setEmail] = useState('');
@@ -12,8 +12,10 @@ const Footer = () => {
     // ADDED: Array of social media links for easy management
     const socialLinks = [
         { name: 'YouTube', href: 'https://www.youtube.com/@JCAI-Consulting', icon: Youtube },
-        { name: 'Instagram', href: 'https://instagram.com/jcai_systems', icon: Instagram },
+        { name: 'Instagram', href: 'https://instagram.com/jcai_consulting', icon: Instagram },
         { name: 'X', href: 'https://x.com/JcaiConsulting', icon: Twitter },
+        // ADDED: Facebook link
+        { name: 'Facebook', href: 'https://www.facebook.com/jcaisystems', icon: Facebook },
     ];
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
