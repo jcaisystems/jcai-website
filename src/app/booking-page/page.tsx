@@ -1,4 +1,3 @@
-// src/app/booking-page/page.tsx
 "use client";
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -47,14 +46,17 @@ const GoHighLevelCalendar = () => {
     }, []);
 
     return (
-        <div className="relative w-full min-h-[800px]">
-             <iframe 
-                src="https://api.leadconnectorhq.com/widget/booking/czGxpZ8jwLKXRfAEpZkb" 
-                style={{ width: '100%', height: '100%', border: 'none', position: 'absolute', top: 0, left: 0 }} 
-                scrolling="no" 
-                id="czGxpZ8jwLKXRfAEpZkb_1758013887000"
-                title="Booking Calendar"
-            ></iframe>
+        <div className="relative w-full rounded-lg overflow-y-auto">
+          <iframe
+            src="https://api.leadconnectorhq.com/widget/booking/czGxpZ8jwLKXRfAEpZkb"
+            style={{
+              width: '100%',
+              height: '800px',
+              border: 'none',
+            }}
+            scrolling="yes"
+            title="Booking Calendar"
+          />
         </div>
     );
 };
@@ -71,18 +73,19 @@ export default function BookingPage() {
     ];
 
     return (
-        <div>
+        // Added overflow-x-hidden to prevent potential horizontal scroll issues
+        <div className="overflow-x-hidden">
             <BookingHeroSection pageKey={pathname} />
             <section className="py-20 bg-slate-800 text-white">
                  <div className="container mx-auto px-6 max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-16 items-start">
-                        {/* Left Column: Details */}
-                        <motion.div
+                     <div className="grid lg:grid-cols-2 gap-16 items-start">
+                         {/* Left Column: Details */}
+                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                             className="space-y-8"
-                        >
+                         >
                             <div>
                                 <h2 className="text-3xl font-bold text-white mb-4">Select a Date and Time for your Operations Audit.</h2>
                                 <p className="text-slate-400 text-lg">
@@ -120,30 +123,31 @@ export default function BookingPage() {
                                 <div className="flex items-center space-x-3">
                                     <Phone className="h-5 w-5 text-cyan-400"/>
                                     <span className="text-slate-300">+1 833-854-7892</span>
-                                </div>
+                                D/</div>
                                 <div className="flex items-center space-x-3">
                                     <Mail className="h-5 w-5 text-cyan-400"/>
                                     <a href="mailto:info@jcai-consulting.com" className="text-slate-300 hover:text-cyan-400">info@jcai-consulting.com</a>
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <Globe className="h-5 w-5 text-cyan-400"/>
-                                     <a href="https://www.jcai-consulting.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-cyan-400">www.jcai-consulting.com</a>
+                                    <a href="https://www.jcai-consulting.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-cyan-400">www.jcai-consulting.com</a>
                                 </div>
                             </div>
-                        </motion.div>
+                         </motion.div>
 
-                        {/* Right Column: Calendar */}
-                        <motion.div
+                         {/* Right Column: Calendar */}
+                         <motion.div
                             initial={{ opacity: 0, x: 50 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
                             className="bg-white rounded-lg shadow-2xl overflow-hidden"
-                        >
-                            <GoHighLevelCalendar />
-                        </motion.div>
-                    </div>
-                </div>
+                         >
+                             <GoHighLevelCalendar />
+                         </motion.div>
+                     </div>
+                 </div>
             </section>
         </div>
     );
 }
+
