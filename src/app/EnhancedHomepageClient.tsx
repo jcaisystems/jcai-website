@@ -24,7 +24,7 @@ const EnhancedHomepageClient = ({ isMobile }: { isMobile: boolean }) => {
     const textY = useTransform(scrollYProgress, [0, 0.15], [0, -50]);
 
     const titleWords = "Invisible Systems That Deliver".split(' ');
-    const subtitleText = "We design custom systems that reduce tedious work, connect your apps, and let you run with clarity - without losing control.";
+    const subtitleText = "8";
 
     return (
       <section ref={containerRef} className="relative h-[100vh] flex flex-col justify-center text-white bg-slate-900 overflow-hidden">

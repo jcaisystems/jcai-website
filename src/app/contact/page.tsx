@@ -48,7 +48,7 @@ const ContactFormSection = () => {
         setStatus('submitting');
 
         try {
-            const response = await fetch('https://services.leadconnectorhq.com/hooks/PEiBgZCgO3UwS99FigqO/webhook-trigger/3e0ab0f7-520b-494b-a03c-47847adbb745', {
+            const response = await fetch('/api/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
