@@ -1,13 +1,18 @@
-// src/app/contact/page.tsx
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { ArrowRight, Mail, Phone, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
-import MagneticButton from '@/components/MagneticButton';
-import MagicCard from '@/components/MagicCard';
 
-// --- Hero Section (Contact Page) ---
+const MagneticButton = ({ children, type, disabled }: { children: React.ReactNode, type?: "submit" | "button", disabled?: boolean }) => (
+    <button type={type} disabled={disabled} className="flex items-center justify-center bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-lg hover:shadow-cyan-500/50">
+        {children}
+    </button>
+);
+const MagicCard = ({ children, className }: { children: React.ReactNode, className: string }) => (
+    <div className={className}>{children}</div>
+);
+
 const ContactHeroSection = ({ pageKey }: { pageKey: string }) => (
     <section key={pageKey} className="relative pt-48 pb-32 flex items-center justify-center text-white bg-slate-700 overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900 to-slate-800"></div>
@@ -33,9 +38,14 @@ const ContactHeroSection = ({ pageKey }: { pageKey: string }) => (
 );
 
 
-// --- Contact Form & Details Section ---
 const ContactFormSection = () => {
-    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    
+    const [formData, setFormData] = useState({ 
+        name: '', 
+        email: '', 
+        message: '',
+        company: '', 
+    });
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -45,22 +55,19 @@ const ContactFormSection = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
         setStatus('submitting');
 
         try {
             const response = await fetch('/api/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    message: formData.message,
-                }),
+                body: JSON.stringify(formData), 
             });
 
             if (response.ok) {
                 setStatus('success');
-                setFormData({ name: '', email: '', message: '' }); // Clear form on success
+                setFormData({ name: '', email: '', message: '', company: '' }); 
             } else {
                 throw new Error('Network response was not ok.');
             }
@@ -88,6 +95,22 @@ const ContactFormSection = () => {
                     >
                         <h2 className="text-3xl font-bold mb-6">Send Us a Message</h2>
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            
+                            
+                            <div style={{ display: "none" }}>
+                                <label htmlFor="company">Company</label>
+                                <input
+                                    type="text"
+                                    id="company"
+                                    name="company"
+                                    autoComplete="off"
+                                    tabIndex={-1} 
+                                    value={formData.company}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                            
+                            
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-slate-400 mb-2">Full Name</label>
                                 <input type="text" id="name" value={formData.name} onChange={handleChange} required className="w-full bg-slate-800 border border-slate-600 rounded-md px-4 py-3 text-white focus:ring-cyan-500 focus:border-cyan-500 transition" />
@@ -151,13 +174,12 @@ const ContactFormSection = () => {
 };
 
 
-// --- Main App Component for Contact Page ---
 export default function ContactPage() {
-  const pathname = usePathname();
-  return (
-    <div>
-        <ContactHeroSection pageKey={pathname} />
-        <ContactFormSection />
-    </div>
-  );
+    const pathname = "/contact"; 
+    return (
+        <div style={{ fontFamily: 'Inter, sans-serif' }}>
+            <ContactHeroSection pageKey={pathname} />
+            <ContactFormSection />
+        </div>
+    );
 }
