@@ -2,19 +2,18 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-// UPDATED: Imported social media icons from lucide-react, including Facebook
-import { ArrowRight, CheckCircle, Loader, Youtube, Instagram, Twitter, Facebook } from 'lucide-react';
+import { ArrowRight, CheckCircle, Loader2 as Loader, Youtube, Instagram, Twitter, Facebook } from 'lucide-react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const Footer = () => {
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
-    // ADDED: Array of social media links for easy management
     const socialLinks = [
         { name: 'YouTube', href: 'https://www.youtube.com/@JCAI-Consulting', icon: Youtube },
         { name: 'Instagram', href: 'https://instagram.com/jcai_consulting', icon: Instagram },
         { name: 'X', href: 'https://x.com/JcaiConsulting', icon: Twitter },
-        // ADDED: Facebook link
         { name: 'Facebook', href: 'https://www.facebook.com/jcaisystems', icon: Facebook },
     ];
 
@@ -22,16 +21,34 @@ const Footer = () => {
         e.preventDefault();
         setStatus('submitting');
 
+        if (!executeRecaptcha) {
+            console.error("reCAPTCHA not initialized");
+            setStatus('error');
+            return;
+        }
+
+        const apiKey = process.env.NEXT_PUBLIC_API_SECRET_KEY;
+        if (!apiKey) {
+            console.error("API Secret Key not found on client.");
+            setStatus('error');
+            return;
+        }
+
         try {
-            const response = await fetch('https://services.leadconnectorhq.com/hooks/PEiBgZCgO3UwS99FigqO/webhook-trigger/a42d2ecc-4468-482b-934f-e5f848411dcc', {
+            const token = await executeRecaptcha('newsletterSubscription');
+
+            const response = await fetch('/api/newsletter', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Internal-API-Key': apiKey, // <-- ADDED SECRET KEY
+                },
+                body: JSON.stringify({ email, recaptchaToken: token }),
             });
 
             if (response.ok) {
                 setStatus('success');
-                setEmail(''); // Clear input on success
+                setEmail('');
             } else {
                 throw new Error('Submission failed');
             }
@@ -53,7 +70,6 @@ const Footer = () => {
                         <p>info@jcai-consulting.com</p>
                         <p>+1 833 854 7892 · +264 81 409 0285</p>
 
-                        {/* ADDED: Social Media Icons */}
                         <div className="mt-6 flex space-x-4">
                             {socialLinks.map((social) => (
                                 <a

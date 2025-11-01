@@ -1,11 +1,15 @@
+// src/app/contact/page.tsx
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { ArrowRight, Mail, Phone, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Mail, Phone, MapPin, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
+// Note: Your MagneticButton and MagicCard components are simplified here for brevity
+// You should keep your original component imports
 const MagneticButton = ({ children, type, disabled }: { children: React.ReactNode, type?: "submit" | "button", disabled?: boolean }) => (
-    <button type={type} disabled={disabled} className="flex items-center justify-center bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-lg hover:shadow-cyan-500/50">
+    <button type={type} disabled={disabled} className="flex items-center justify-center bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-full transition duration-300 shadow-lg hover:shadow-cyan-500/50 disabled:bg-slate-500 disabled:cursor-not-allowed">
         {children}
     </button>
 );
@@ -40,11 +44,12 @@ const ContactHeroSection = ({ pageKey }: { pageKey: string }) => (
 
 const ContactFormSection = () => {
     
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [formData, setFormData] = useState({ 
         name: '', 
         email: '', 
         message: '',
-        company: '', 
+        company: '', // Honeypot
     });
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
@@ -55,14 +60,32 @@ const ContactFormSection = () => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!executeRecaptcha) {
+            console.error("reCAPTCHA not initialized");
+            setStatus('error');
+            return;
+        }
+
+        const apiKey = process.env.NEXT_PUBLIC_API_SECRET_KEY;
+        if (!apiKey) {
+            console.error("API Secret Key not found on client.");
+            setStatus('error');
+            return;
+        }
         
         setStatus('submitting');
 
         try {
+            const token = await executeRecaptcha('contactForm');
+
             const response = await fetch('/api/contact', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData), 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Internal-API-Key': apiKey, // <-- ADDED SECRET KEY
+                },
+                body: JSON.stringify({ ...formData, recaptchaToken: token }), 
             });
 
             if (response.ok) {
@@ -96,7 +119,7 @@ const ContactFormSection = () => {
                         <h2 className="text-3xl font-bold mb-6">Send Us a Message</h2>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             
-                            
+                            {/* Honeypot field */}
                             <div style={{ display: "none" }}>
                                 <label htmlFor="company">Company</label>
                                 <input
@@ -125,7 +148,7 @@ const ContactFormSection = () => {
                             </div>
                             <div>
                                 <MagneticButton type="submit" disabled={status === 'submitting'}>
-                                    {status === 'submitting' && 'Sending...'}
+                                    {status === 'submitting' && <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...</>}
                                     {status === 'idle' && <>Send Message <ArrowRight className="ml-2"/></>}
                                     {status === 'success' && <>Message Sent! <CheckCircle className="ml-2"/></>}
                                     {status === 'error' && <>Try Again <AlertTriangle className="ml-2"/></>}
@@ -175,7 +198,7 @@ const ContactFormSection = () => {
 
 
 export default function ContactPage() {
-    const pathname = "/contact"; 
+    const pathname = "/contact"; // Hardcoding for the key
     return (
         <div style={{ fontFamily: 'Inter, sans-serif' }}>
             <ContactHeroSection pageKey={pathname} />

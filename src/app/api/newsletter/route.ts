@@ -1,4 +1,3 @@
-// src/app/api/contact/route.ts
 import { NextResponse, NextRequest } from "next/server";
 
 function getClientIp(req: NextRequest): string {
@@ -21,7 +20,6 @@ async function verifyRecaptcha(token: string) {
     console.error("RECAPTCHA_SECRET_KEY is not set");
     return { success: false, error: "Server configuration error." };
   }
-
   try {
     const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
       method: "POST",
@@ -50,63 +48,52 @@ export async function POST(req: NextRequest) {
   const serverApiKey = process.env.API_SECRET_KEY;
   const clientApiKey = req.headers.get('x-internal-api-key');
   const origin = req.headers.get("origin") || "";
-  
+
   try {
     if (!serverApiKey || !clientApiKey || serverApiKey !== clientApiKey) {
-      console.log(`🚫 Unauthorized API key attempt from: ${clientIp} | Origin: ${origin}`);
+      console.log(`🚫 [Newsletter] Unauthorized API key attempt from: ${clientIp} | Origin: ${origin}`);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     if (process.env.NODE_ENV === "production" && !allowedOrigins.includes(origin)) {
-      console.log(`🚫 Unauthorized origin: ${origin} from IP: ${clientIp}`);
+      console.log(`🚫 [Newsletter] Unauthorized origin: ${origin} from IP: ${clientIp}`);
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const { name, email, message, company, recaptchaToken } = await req.json();
+    const { email, recaptchaToken } = await req.json();
 
     if (!recaptchaToken) {
-      console.log(`🚫 Missing reCAPTCHA token from: ${clientIp}`);
+      console.log(`🚫 [Newsletter] Missing reCAPTCHA token from: ${clientIp}`);
       return NextResponse.json({ error: "Missing reCAPTCHA token." }, { status: 400 });
     }
     const recaptchaVerification = await verifyRecaptcha(recaptchaToken);
     if (!recaptchaVerification.success) {
-      console.warn(`🚫 reCAPTCHA verification failed for ${clientIp}:`, recaptchaVerification.error);
+      console.warn(`🚫 [Newsletter] reCAPTCHA verification failed for ${clientIp}:`, recaptchaVerification.error);
       return NextResponse.json({ error: "reCAPTCHA failed. Please try again." }, { status: 400 });
     }
 
-    if (company && company.trim() !== "") {
-      console.log(`🐍 Honeypot triggered by: ${clientIp} | Origin: ${origin}`);
-      return NextResponse.json({ error: "Spam detected." }, { status: 400 });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
     }
 
-    if (!name || !email || !message) {
-      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
-    }
+    const leadConnectorUrl = "https://services.leadconnectorhq.com/hooks/PEiBgZCgO3UwS99FigqO/webhook-trigger/a42d2ecc-4468-482b-934f-e5f848411dcc";
+    const response = await fetch(leadConnectorUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: "Newsletter Signup" }),
+    });
 
-    const res = await fetch(
-      "https://services.leadconnectorhq.com/hooks/PEiBgZCgO3UwS99FigqO/webhook-trigger/3e0ab0f7-520b-494b-a03c-47847adbb745",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message, source: "Contact Form" }),
-      }
-    );
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("LeadConnector error:", errorText);
-      return NextResponse.json({ error: "Failed to send message." }, { status: 500 });
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("LeadConnector newsletter error:", errorText);
+        return NextResponse.json({ error: "Subscription failed." }, { status: 500 });
     }
 
-    console.log(`✅ Contact form submitted by: ${name} (${email}) from IP: ${clientIp}`);
+    console.log(`✅ Newsletter subscription from: ${email} | IP: ${clientIp}`);
     return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error("Contact form error:", error);
+    console.error("Newsletter API error:", error);
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
